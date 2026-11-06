@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Record Management API | Dashboard & Explorer</title>
+  <meta name="description" content="Production-ready RESTful API and Interactive Management Dashboard for Student Records, Courses, and Enrollments.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">🎓</div>
+        <div class="brand-text">
+          <h2>EduRecord API</h2>
+          <span class="badge-version">v1.0.0 • SQLite</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="overview">
+          <span class="icon">📊</span>
+          <span>Overview</span>
+        </button>
+        <button class="nav-item" data-tab="explorer">
+          <span class="icon">⚡</span>
+          <span>Live API Explorer</span>
+        </button>
+        <button class="nav-item" data-tab="students">
+          <span class="icon">👨‍🎓</span>
+          <span>Students Directory</span>
+        </button>
+        <button class="nav-item" data-tab="courses">
+          <span class="icon">📚</span>
+          <span>Courses Catalog</span>
+        </button>
+        <button class="nav-item" data-tab="enrollments">
+          <span class="icon">📝</span>
+          <span>Enrollments</span>
+        </button>
+        <button class="nav-item" data-tab="docs">
+          <span class="icon">📖</span>
+          <span>API Documentation</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="system-status">
+          <span class="status-dot"></span>
+          <span id="api-status-text">Checking API...</span>
+        </div>
+        <a href="https://github.com/am-Codes7" target="_blank" rel="noopener" class="author-link">
+          <span>GitHub: @am-Codes7</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="top-header">
+        <div class="header-title">
+          <h1 id="page-title">System Overview & Metrics</h1>
+          <p class="subtitle" id="page-subtitle">Real-time statistics from the Student Record Management relational database.</p>
+        </div>
+        <div class="header-actions">
+          <button id="refresh-btn" class="btn btn-secondary">
+            <span class="icon">🔄</span> Refresh Data
+          </button>
+          <a href="#explorer" class="btn btn-primary" onclick="switchTab('explorer')">
+            <span class="icon">🚀</span> Test API Endpoints
+          </a>
+        </div>
+      </header>
+
+      <!-- TAB 1: OVERVIEW -->
+      <section id="tab-overview" class="tab-pane active">
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-label">Total Students</span>
+              <span class="stat-icon purple">👨‍🎓</span>
+            </div>
+            <div class="stat-value" id="stat-total-students">--</div>
+            <div class="stat-sub" id="stat-active-students">-- active enrolled</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-label">Total Courses</span>
+              <span class="stat-icon blue">📚</span>
+            </div>
+            <div class="stat-value" id="stat-total-courses">--</div>
+            <div class="stat-sub" id="stat-total-credits">-- total credit hours</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-label">Total Enrollments</span>
+              <span class="stat-icon emerald">📝</span>
+            </div>
+            <div class="stat-value" id="stat-total-enrollments">--</div>
+            <div class="stat-sub" id="stat-enrolled-active">-- in progress</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-label">API Health</span>
+              <span class="stat-icon amber">🩺</span>
+            </div>
+            <div class="stat-value text-green" id="stat-health">UP</div>
+            <div class="stat-sub" id="stat-uptime">Uptime: --</div>
+          </div>
+        </div>
+
+        <div class="grid-2-col">
+          <!-- Department Distribution -->
+          <div class="card">
+            <div class="card-header">
+              <h3>Academic Departments</h3>
+              <span class="badge">Active Courses</span>
+            </div>
+            <div class="card-body">
+              <div id="department-list" class="department-list">
+                <div class="skeleton-row">Loading departments...</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Enrollments Feed -->
+          <div class="card">
+            <div class="card-header">
+              <h3>Recent Enrollments</h3>
+              <span class="badge">Live Feed</span>
+            </div>
+            <div class="card-body">
+              <div id="recent-enrollments" class="recent-feed">
+                <div class="skeleton-row">Loading recent enrollments...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: LIVE API EXPLORER -->
+      <section id="tab-explorer" class="tab-pane">
+        <div class="card explorer-card">
+          <div class="card-header">
+            <div>
+              <h3>Interactive API Request Runner</h3>
+              <p class="text-muted">Choose a pre-configured request or customize URL, Method, and Payload to test live API responses.</p>
+            </div>
+            <div class="preset-dropdown">
+              <select id="preset-selector" class="select-input">
+                <option value="get_students">GET /api/students (List with pagination)</option>
+                <option value="get_students_search">GET /api/students?search=alex&status=Active</option>
+                <option value="get_student_id">GET /api/students/1 (With enrolled courses)</option>
+                <option value="create_student">POST /api/students (Create Student)</option>
+                <option value="get_courses">GET /api/courses (List with seats & credits)</option>
+                <option value="get_course_id">GET /api/courses/1 (With enrolled roster)</option>
+                <option value="create_course">POST /api/courses (Create Course)</option>
+                <option value="get_enrollments">GET /api/enrollments (List with student & course joins)</option>
+                <option value="create_enrollment">POST /api/enrollments (Enroll Student)</option>
+                <option value="get_dashboard_stats">GET /api/dashboard/stats (System Metrics)</option>
+                <option value="get_health">GET /api/health (Uptime & Status)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <!-- Request Builder -->
+            <div class="request-bar">
+              <select id="req-method" class="method-select">
+                <option value="GET">GET</option>
+                <option value="POST">POST</option>
+                <option value="PUT">PUT</option>
+                <option value="PATCH">PATCH</option>
+                <option value="DELETE">DELETE</option>
+              </select>
+              <input type="text" id="req-url" class="url-input" value="/api/students?page=1&limit=5">
+              <button id="send-request-btn" class="btn btn-primary">
+                <span>⚡ Send Request</span>
+              </button>
+            </div>
+
+            <div class="request-payload-section" id="payload-container" style="display: none;">
+              <label for="req-body" class="field-label">JSON Request Body:</label>
+              <textarea id="req-body" class="code-textarea" rows="6"></textarea>
+            </div>
+
+            <!-- Response Viewer -->
+            <div class="response-viewer">
+              <div class="response-header">
+                <div class="response-status">
+                  <span>Response:</span>
+                  <span id="res-status-badge" class="status-badge ready">READY</span>
+                  <span id="res-time-badge" class="time-badge">0ms</span>
+                </div>
+                <button id="copy-response-btn" class="btn btn-sm btn-ghost">📋 Copy JSON</button>
+              </div>
+              <pre class="json-code" id="res-body-code">// Click 'Send Request' to execute the API call and view response.</pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: STUDENTS DIRECTORY -->
+      <section id="tab-students" class="tab-pane">
+        <div class="card">
+          <div class="card-header toolbar-header">
+            <div class="search-box">
+              <input type="text" id="student-search-input" placeholder="Search by name, email, or student ID..." class="text-input">
+            </div>
+            <div class="filter-group">
+              <select id="student-status-filter" class="select-input">
+                <option value="">All Statuses</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+                <option value="Suspended">Suspended</option>
+                <option value="Graduated">Graduated</option>
+              </select>
+              <select id="student-gender-filter" class="select-input">
+                <option value="">All Genders</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+              <button id="add-student-modal-btn" class="btn btn-primary btn-sm">+ New Student</button>
+            </div>
+          </div>
+
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Student ID</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Gender</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="students-table-body">
+                  <tr><td colspan="7" class="text-center p-4">Loading students...</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination Bar -->
+            <div class="pagination-bar">
+              <span class="pagination-info" id="student-pagination-info">Showing 0 of 0 students</span>
+              <div class="pagination-controls">
+                <button id="prev-student-page" class="btn btn-sm btn-secondary" disabled>← Previous</button>
+                <span id="student-current-page" class="page-indicator">1</span>
+                <button id="next-student-page" class="btn btn-sm btn-secondary" disabled>Next →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: COURSES CATALOG -->
+      <section id="tab-courses" class="tab-pane">
+        <div class="card">
+          <div class="card-header toolbar-header">
+            <div class="search-box">
+              <input type="text" id="course-search-input" placeholder="Search by course code, title, instructor..." class="text-input">
+            </div>
+            <div class="filter-group">
+              <select id="course-dept-filter" class="select-input">
+                <option value="">All Departments</option>
+              </select>
+              <button id="add-course-modal-btn" class="btn btn-primary btn-sm">+ New Course</button>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <div class="courses-grid" id="courses-grid-container">
+              <div class="text-center p-4">Loading courses...</div>
+            </div>
+
+            <div class="pagination-bar mt-4">
+              <span class="pagination-info" id="course-pagination-info">Showing 0 courses</span>
+              <div class="pagination-controls">
+                <button id="prev-course-page" class="btn btn-sm btn-secondary" disabled>← Previous</button>
+                <span id="course-current-page" class="page-indicator">1</span>
+                <button id="next-course-page" class="btn btn-sm btn-secondary" disabled>Next →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: ENROLLMENTS -->
+      <section id="tab-enrollments" class="tab-pane">
+        <div class="card">
+          <div class="card-header toolbar-header">
+            <div class="search-box">
+              <input type="text" id="enrollment-search-input" placeholder="Search by student or course..." class="text-input">
+            </div>
+            <div class="filter-group">
+              <select id="enrollment-status-filter" class="select-input">
+                <option value="">All Statuses</option>
+                <option value="Enrolled">Enrolled</option>
+                <option value="Completed">Completed</option>
+                <option value="Dropped">Dropped</option>
+              </select>
+              <select id="enrollment-semester-filter" class="select-input">
+                <option value="">All Semesters</option>
+                <option value="Spring 2025">Spring 2025</option>
+                <option value="Fall 2024">Fall 2024</option>
+                <option value="Fall 2023">Fall 2023</option>
+              </select>
+              <button id="enroll-modal-btn" class="btn btn-primary btn-sm">+ Enroll Student</button>
+            </div>
+          </div>
+
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Enrollment ID</th>
+                    <th>Student</th>
+                    <th>Course</th>
+                    <th>Credits</th>
+                    <th>Semester</th>
+                    <th>Grade</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="enrollments-table-body">
+                  <tr><td colspan="8" class="text-center p-4">Loading enrollments...</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="pagination-bar">
+              <span class="pagination-info" id="enrollment-pagination-info">Showing 0 of 0 enrollments</span>
+              <div class="pagination-controls">
+                <button id="prev-enrollment-page" class="btn btn-sm btn-secondary" disabled>← Previous</button>
+                <span id="enrollment-current-page" class="page-indicator">1</span>
+                <button id="next-enrollment-page" class="btn btn-sm btn-secondary" disabled>Next →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 6: DOCUMENTATION -->
+      <section id="tab-docs" class="tab-pane">
+        <div class="docs-container">
+          <div class="doc-section">
+            <h2>REST API Specifications</h2>
+            <p>Every response returns a structured JSON payload with uniform keys: <code>success</code>, <code>message</code>, <code>data</code>, and optional <code>pagination</code> or <code>error</code>.</p>
+          </div>
+
+          <div class="endpoint-group">
+            <h3>👨‍🎓 Students API (<code>/api/students</code>)</h3>
+            <div class="endpoint-card"><span class="method get">GET</span> <code>/api/students</code> - List students with search, filters (<code>status</code>, <code>gender</code>), sorting (<code>sortBy</code>, <code>sortOrder</code>), and pagination (<code>page</code>, <code>limit</code>).</div>
+            <div class="endpoint-card"><span class="method get">GET</span> <code>/api/students/:id</code> - Retrieve single student with their enrolled courses & academic history.</div>
+            <div class="endpoint-card"><span class="method post">POST</span> <code>/api/students</code> - Create new student. Validates unique <code>student_id</code> and <code>email</code>.</div>
+            <div class="endpoint-card"><span class="method put">PUT</span> <code>/api/students/:id</code> - Full update of student record.</div>
+            <div class="endpoint-card"><span class="method patch">PATCH</span> <code>/api/students/:id</code> - Partial update of student record.</div>
+            <div class="endpoint-card"><span class="method delete">DELETE</span> <code>/api/students/:id</code> - Delete student (cascades related enrollments).</div>
+          </div>
+
+          <div class="endpoint-group">
+            <h3>📚 Courses API (<code>/api/courses</code>)</h3>
+            <div class="endpoint-card"><span class="method get">GET</span> <code>/api/courses</code> - List courses with search, filters (<code>department</code>, <code>credits</code>), sorting, and active enrollment count.</div>
+            <div class="endpoint-card"><span class="method get">GET</span> <code>/api/courses/:id</code> - Retrieve course by ID with roster of enrolled students and seat availability.</div>
+            <div class="endpoint-card"><span class="method post">POST</span> <code>/api/courses</code> - Create course. Enforces unique <code>course_code</code>, credit bounds (1-6).</div>
+            <div class="endpoint-card"><span class="method patch">PATCH</span> <code>/api/courses/:id</code> - Update course details.</div>
+            <div class="endpoint-card"><span class="method delete">DELETE</span> <code>/api/courses/:id</code> - Delete course (protected if active enrollments exist).</div>
+          </div>
+
+          <div class="endpoint-group">
+            <h3>📝 Enrollments API (<code>/api/enrollments</code>)</h3>
+            <div class="endpoint-card"><span class="method get">GET</span> <code>/api/enrollments</code> - List enrollments with filters (<code>student_id</code>, <code>course_id</code>, <code>semester</code>, <code>status</code>, <code>grade</code>).</div>
+            <div class="endpoint-card"><span class="method get">GET</span> <code>/api/enrollments/:id</code> - Get enrollment record by ID.</div>
+            <div class="endpoint-card"><span class="method post">POST</span> <code>/api/enrollments</code> - Enroll student. Enforces active student status, capacity limits, and duplicate enrollment constraints.</div>
+            <div class="endpoint-card"><span class="method patch">PATCH</span> <code>/api/enrollments/:id</code> - Update grade or status (e.g. 'Completed', 'Dropped').</div>
+            <div class="endpoint-card"><span class="method delete">DELETE</span> <code>/api/enrollments/:id</code> - Remove enrollment.</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Detail Modal -->
+  <div id="detail-modal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-title">Record Details</h3>
+        <button class="modal-close" id="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-content">
+        <!-- Dynamic content inserted by app.js -->
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

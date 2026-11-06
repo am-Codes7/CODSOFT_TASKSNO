@@ -1,0 +1,184 @@
+{
+  "info": {
+    "_postman_id": "c1f79f42-4e89-498c-8519-todo-api-backend",
+    "name": "To-Do List Backend REST API",
+    "description": "Complete Postman collection for the To-Do List Backend service with CRUD operations, status toggling, search/filter queries, and analytics.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Tasks",
+      "item": [
+        {
+          "name": "Get All Tasks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks"]
+            },
+            "description": "Retrieve all tasks with default pagination."
+          }
+        },
+        {
+          "name": "Filter Tasks by Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks?status=pending",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks"],
+              "query": [
+                { "key": "status", "value": "pending" }
+              ]
+            },
+            "description": "Filter tasks by completion status ('pending' or 'completed')."
+          }
+        },
+        {
+          "name": "Search & Filter Tasks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks?search=API&priority=high&sortBy=due_date&order=asc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks"],
+              "query": [
+                { "key": "search", "value": "API" },
+                { "key": "priority", "value": "high" },
+                { "key": "sortBy", "value": "due_date" },
+                { "key": "order", "value": "asc" }
+              ]
+            },
+            "description": "Search keyword across title/description with priority filter and sorting."
+          }
+        },
+        {
+          "name": "Get Task By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", "1"]
+            },
+            "description": "Retrieve detailed information for a single task by ID."
+          }
+        },
+        {
+          "name": "Create Task",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Integrate Third-Party Notification Service\",\n  \"description\": \"Configure webhook callbacks for high priority overdue tasks.\",\n  \"status\": \"pending\",\n  \"priority\": \"high\",\n  \"category\": \"Backend\",\n  \"due_date\": \"2026-10-30\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks"]
+            },
+            "description": "Create a new task with validation."
+          }
+        },
+        {
+          "name": "Update Task",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Integrate Webhook Notification Service (Updated)\",\n  \"priority\": \"urgent\",\n  \"category\": \"DevOps\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", "1"]
+            },
+            "description": "Update specific fields of an existing task."
+          }
+        },
+        {
+          "name": "Toggle Task Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"completed\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/1/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", "1", "status"]
+            },
+            "description": "Mark a task as completed or pending."
+          }
+        },
+        {
+          "name": "Delete Task",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", "1"]
+            },
+            "description": "Permanently remove a task by ID."
+          }
+        },
+        {
+          "name": "Clear Completed Tasks",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/completed",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", "completed"]
+            },
+            "description": "Batch delete all tasks with status 'completed'."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Statistics",
+      "item": [
+        {
+          "name": "Get Summary Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/stats/summary",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", "stats", "summary"]
+            },
+            "description": "Get summary metrics, completion rates, priority distributions, and category breakdown."
+          }
+        }
+      ]
+    }
+  ]
+}

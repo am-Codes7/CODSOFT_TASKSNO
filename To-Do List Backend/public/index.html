@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskPulse | RESTful Task Management Backend & Dashboard</title>
+  <meta name="description" content="Production-ready RESTful API backend and interactive management dashboard for task orchestration with SQLite storage, full validation, and Swagger documentation.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Background decorative glows -->
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <div class="app-shell">
+    <!-- Navbar -->
+    <header class="navbar">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 11 12 14 22 4"></polyline>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">TaskPulse</h1>
+          <span class="brand-tag">RESTful API Engine</span>
+        </div>
+      </div>
+
+      <div class="nav-actions">
+        <a href="/api-docs" target="_blank" class="nav-btn btn-ghost" id="nav-swagger-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+          </svg>
+          Swagger Docs
+        </a>
+        <a href="/postman_collection.json" download class="nav-btn btn-ghost" id="nav-postman-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Postman Spec
+        </a>
+        <button class="nav-btn btn-primary" id="open-create-modal-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          New Task
+        </button>
+      </div>
+    </header>
+
+    <!-- Metrics Cards Grid -->
+    <section class="stats-grid" id="stats-grid">
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-label">Total Tasks</span>
+          <div class="stat-icon-wrapper total-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="9"></line><line x1="9" y1="13" x2="15" y2="13"></line><line x1="9" y1="17" x2="11" y2="17"></line></svg>
+          </div>
+        </div>
+        <div class="stat-value" id="stat-total">0</div>
+        <div class="stat-subtext">Active database records</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-label">Pending</span>
+          <div class="stat-icon-wrapper pending-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          </div>
+        </div>
+        <div class="stat-value text-amber" id="stat-pending">0</div>
+        <div class="stat-subtext">Requires action</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-label">Completed</span>
+          <div class="stat-icon-wrapper completed-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          </div>
+        </div>
+        <div class="stat-value text-emerald" id="stat-completed">0</div>
+        <div class="stat-subtext">Successfully finished</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-label">Completion Rate</span>
+          <div class="stat-icon-wrapper rate-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+          </div>
+        </div>
+        <div class="stat-value text-cyan" id="stat-rate">0%</div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="stat-progress-bar" style="width: 0%"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive Workspace Main Section -->
+    <main class="main-content">
+      <!-- Filter Toolbar -->
+      <div class="filter-toolbar">
+        <div class="search-box">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="search-input" placeholder="Search tasks by title or description..." autocomplete="off">
+          <button id="clear-search-btn" class="clear-search-btn" title="Clear search" style="display: none;">&times;</button>
+        </div>
+
+        <div class="filter-controls">
+          <!-- Status Pill Tabs -->
+          <div class="status-tabs" role="tablist">
+            <button class="status-tab active" data-status="all" id="tab-all">All</button>
+            <button class="status-tab" data-status="pending" id="tab-pending">Pending</button>
+            <button class="status-tab" data-status="completed" id="tab-completed">Completed</button>
+          </div>
+
+          <!-- Priority Select -->
+          <select id="priority-filter" class="custom-select" title="Filter by priority">
+            <option value="all">All Priorities</option>
+            <option value="urgent">Urgent</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
+
+          <!-- Category Select -->
+          <select id="category-filter" class="custom-select" title="Filter by category">
+            <option value="all">All Categories</option>
+          </select>
+
+          <!-- Sort Select -->
+          <select id="sort-select" class="custom-select" title="Sort order">
+            <option value="created_at-desc">Newest First</option>
+            <option value="created_at-asc">Oldest First</option>
+            <option value="due_date-asc">Due Date (Earliest)</option>
+            <option value="priority-desc">Priority (High to Low)</option>
+            <option value="title-asc">Title (A-Z)</option>
+          </select>
+
+          <button id="clear-completed-btn" class="btn-outline-danger" title="Purge completed tasks">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            Clear Done
+          </button>
+        </div>
+      </div>
+
+      <!-- Task Cards Stream -->
+      <div class="tasks-container" id="tasks-container">
+        <!-- Rendered dynamically -->
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <span>Loading tasks from backend database...</span>
+        </div>
+      </div>
+
+      <!-- API Diagnostics Live Stream Drawer -->
+      <footer class="api-console">
+        <div class="api-console-header">
+          <div class="api-console-title">
+            <span class="status-indicator-live"></span>
+            <span>REST API Live Response Console</span>
+          </div>
+          <span class="api-endpoint-badge" id="last-endpoint-badge">READY</span>
+        </div>
+        <div class="api-console-body" id="api-console-log">
+          <span class="code-comment">// Ready. Send requests via the dashboard, Swagger UI, or curl.</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- Task Modal (Create / Edit) -->
+  <div class="modal-backdrop" id="task-modal" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modal-title">Create New Task</h2>
+        <button class="modal-close-btn" id="modal-close-btn">&times;</button>
+      </div>
+      <form id="task-form">
+        <input type="hidden" id="task-id-field">
+
+        <div class="form-group">
+          <label for="form-title" class="form-label">Task Title <span class="required">*</span></label>
+          <input type="text" id="form-title" class="form-input" placeholder="e.g. Implement OAuth2 token refresh" required maxlength="200">
+        </div>
+
+        <div class="form-group">
+          <label for="form-description" class="form-label">Description</label>
+          <textarea id="form-description" class="form-textarea" placeholder="Add technical details, acceptance criteria, or notes..." rows="3" maxlength="2000"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-half">
+            <label for="form-priority" class="form-label">Priority</label>
+            <select id="form-priority" class="form-select">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+              <option value="urgent">Urgent</option>
+            </select>
+          </div>
+
+          <div class="form-group col-half">
+            <label for="form-category" class="form-label">Category</label>
+            <input type="text" id="form-category" class="form-input" placeholder="General, Backend, UI..." maxlength="50" value="General">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-half">
+            <label for="form-due-date" class="form-label">Due Date</label>
+            <input type="date" id="form-due-date" class="form-input">
+          </div>
+
+          <div class="form-group col-half">
+            <label for="form-status" class="form-label">Initial Status</label>
+            <select id="form-status" class="form-select">
+              <option value="pending" selected>Pending</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-ghost" id="modal-cancel-btn">Cancel</button>
+          <button type="submit" class="btn-primary" id="modal-submit-btn">Save Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

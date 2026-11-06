@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Management System | REST API & Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">Contact Management System</h1>
+          <p class="brand-sub">Enterprise REST API & Contact Intelligence</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <a href="/api" target="_blank" class="btn btn-secondary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="16 18 22 12 16 6"></polyline>
+            <polyline points="8 6 2 12 8 18"></polyline>
+          </svg>
+          API Info (JSON)
+        </a>
+        <button id="btnOpenAddModal" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Add Contact
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-container">
+    <!-- Quick Statistics Bar -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label">Total Contacts</span>
+          <span id="statTotal" class="stat-value">0</span>
+        </div>
+        <div class="stat-badge blue">All</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label">Personal Contacts</span>
+          <span id="statPersonal" class="stat-value">0</span>
+        </div>
+        <div class="stat-badge green">Personal</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label">Professional Contacts</span>
+          <span id="statProfessional" class="stat-value">0</span>
+        </div>
+        <div class="stat-badge purple">Professional</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-info">
+          <span class="stat-label">Other Categories</span>
+          <span id="statOther" class="stat-value">0</span>
+        </div>
+        <div class="stat-badge amber">Other</div>
+      </div>
+    </section>
+
+    <!-- Toolbar: Search, Filters, Sorting -->
+    <section class="toolbar-card">
+      <div class="toolbar-row">
+        <!-- Search input -->
+        <div class="search-box">
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="searchInput" placeholder="Search by name, email, or phone number...">
+          <button id="btnClearSearch" class="btn-clear hidden" title="Clear search">&times;</button>
+        </div>
+
+        <!-- Filter Category -->
+        <div class="filter-group">
+          <label for="categoryFilter" class="filter-label">Category:</label>
+          <select id="categoryFilter" class="custom-select">
+            <option value="">All Categories</option>
+            <option value="Personal">Personal</option>
+            <option value="Professional">Professional</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <!-- Sort By -->
+        <div class="filter-group">
+          <label for="sortBySelect" class="filter-label">Sort by:</label>
+          <select id="sortBySelect" class="custom-select">
+            <option value="createdAt">Date Created</option>
+            <option value="name">Name</option>
+            <option value="email">Email</option>
+            <option value="company">Company</option>
+          </select>
+          <button id="btnToggleOrder" class="btn btn-icon" title="Toggle Sort Order (ASC / DESC)">
+            <span id="sortOrderIndicator">DESC &#8595;</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Table of Contacts -->
+    <section class="table-container">
+      <div class="table-wrapper">
+        <table class="contacts-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Company</th>
+              <th>Address</th>
+              <th>Category</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="contactsTableBody">
+            <tr>
+              <td colspan="7" class="loading-state">
+                <div class="spinner"></div>
+                <p>Loading contacts from REST API...</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination Footer -->
+      <div class="pagination-bar">
+        <div class="pagination-info" id="paginationInfo">
+          Showing 0 of 0 contacts
+        </div>
+        <div class="pagination-controls">
+          <button id="btnPrevPage" class="btn btn-sm btn-secondary" disabled>&larr; Previous</button>
+          <span id="pageNumbers" class="page-numbers">Page 1 of 1</span>
+          <button id="btnNextPage" class="btn btn-sm btn-secondary" disabled>Next &rarr;</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Add / Edit Contact Modal -->
+  <div id="contactModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modalTitle">Add New Contact</h3>
+        <button id="btnCloseModal" class="btn-close">&times;</button>
+      </div>
+      <form id="contactForm" novalidate>
+        <input type="hidden" id="contactId">
+
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="inputName">Full Name <span class="required">*</span></label>
+            <input type="text" id="inputName" required placeholder="e.g. Alex Morgan">
+            <span class="field-error" id="errorName"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="inputEmail">Email Address <span class="required">*</span></label>
+            <input type="email" id="inputEmail" required placeholder="alex.morgan@example.com">
+            <span class="field-error" id="errorEmail"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="inputPhone">Phone Number <span class="required">*</span></label>
+            <input type="tel" id="inputPhone" required placeholder="+1 555-019-2834">
+            <span class="field-error" id="errorPhone"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="inputCompany">Company</label>
+            <input type="text" id="inputCompany" placeholder="Acme Technologies Ltd.">
+          </div>
+
+          <div class="form-group">
+            <label for="inputCategory">Category</label>
+            <select id="inputCategory" class="custom-select">
+              <option value="Personal">Personal</option>
+              <option value="Professional" selected>Professional</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="inputAddress">Address</label>
+            <input type="text" id="inputAddress" placeholder="Suite 400, 100 Tech Boulevard, NY">
+          </div>
+
+          <div class="form-group full-width">
+            <label for="inputNotes">Notes</label>
+            <textarea id="inputNotes" rows="2" placeholder="Key contact for enterprise partnerships..."></textarea>
+          </div>
+        </div>
+
+        <div id="formGlobalError" class="form-alert error-alert hidden"></div>
+
+        <div class="modal-footer">
+          <button type="button" id="btnCancelModal" class="btn btn-secondary">Cancel</button>
+          <button type="submit" id="btnSaveContact" class="btn btn-primary">
+            <span>Save Contact</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModal" class="modal-backdrop hidden">
+    <div class="modal-card small-modal">
+      <div class="modal-header">
+        <h3>Delete Contact</h3>
+        <button id="btnCloseDeleteModal" class="btn-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete <strong id="deleteContactName">this contact</strong>?</p>
+        <p class="modal-subtext">This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btnCancelDelete" class="btn btn-secondary">Cancel</button>
+        <button type="button" id="btnConfirmDelete" class="btn btn-danger">Delete Permanently</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
